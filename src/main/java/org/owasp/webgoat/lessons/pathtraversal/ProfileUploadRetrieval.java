@@ -100,6 +100,11 @@ public class ProfileUploadRetrieval implements AssignmentEndpoint {
       var catPicture =
           new File(catPicturesDirectory, (id == null ? RandomUtils.nextInt(1, 11) : id) + ".jpg");
 
+      String normalizedPath = catPicture.getCanonicalPath();
+      if (!normalizedPath.startsWith(new File(catPicturesDirectory).getCanonicalPath())) {
+        return ResponseEntity.badRequest().body("Error: Attempt to access file outside of the base directory.");
+      }
+ 
       if (catPicture.getName().toLowerCase().contains("path-traversal-secret.jpg")) {
         return ResponseEntity.ok()
             .contentType(MediaType.parseMediaType(MediaType.IMAGE_JPEG_VALUE))
@@ -111,7 +116,7 @@ public class ProfileUploadRetrieval implements AssignmentEndpoint {
       if (!normalizedPath.startsWith(new File(catPicturesDirectory).getCanonicalPath())) {
         return ResponseEntity.badRequest().body("Error: Attempt to access file outside of the base directory.");
       }
-      
+
       if (catPicture.exists()) {
         return ResponseEntity.ok()
             .contentType(MediaType.parseMediaType(MediaType.IMAGE_JPEG_VALUE))

@@ -78,7 +78,8 @@ public class FileServer {
       if (!normalizedPath.startsWith(destinationDir.toPath())) {
         throw new IOException("Invalid file path");
       }
- 
+      
+
       Files.deleteIfExists(destinationFile);
       Files.copy(is, destinationFile);
     }
