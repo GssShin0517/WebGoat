@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.PreparedStatement;
 import org.owasp.webgoat.container.LessonDataSource;
 import org.owasp.webgoat.container.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.container.assignments.AssignmentHints;
@@ -41,9 +42,10 @@ public class SqlInjectionLesson4 implements AssignmentEndpoint {
 
   protected AttackResult injectableQuery(String query) {
     try (Connection connection = dataSource.getConnection()) {
-      try (Statement statement =
-          connection.createStatement(TYPE_SCROLL_INSENSITIVE, CONCUR_READ_ONLY)) {
-        statement.executeUpdate(query);
+      String sql = "UPDATE employees SET phone = ? WHERE condition"; // Adjust the SQL query as needed
+      try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        statement.setString(1, query); // Set the parameter value
+        statement.executeUpdate();
         connection.commit();
         ResultSet results = statement.executeQuery("SELECT phone from employees;");
         StringBuilder output = new StringBuilder();
