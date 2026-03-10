@@ -70,6 +70,13 @@ public class ProfileZipSlip extends ProfileUploadBase {
 
     try {
       var uploadedZipFile = tmpZipDirectory.resolve(file.getOriginalFilename());
+
+      String canonicalDestinationPath = uploadedZipFile.toFile().getCanonicalPath();
+      
+      if (!canonicalDestinationPath.startsWith(tmpZipDirectory.toFile().getCanonicalPath())) {
+        return failed(this).feedback("path-traversal-zip-slip.invalid-path").build();
+      }
+
       FileCopyUtils.copy(file.getBytes(), uploadedZipFile.toFile());
 
       ZipFile zip = new ZipFile(uploadedZipFile.toFile());
@@ -77,6 +84,12 @@ public class ProfileZipSlip extends ProfileUploadBase {
       while (entries.hasMoreElements()) {
         ZipEntry e = entries.nextElement();
         File f = new File(tmpZipDirectory.toFile(), e.getName());
+        String canonicalDestinationPath = f.getCanonicalPath();
+        String canonicalBasePath = tmpZipDirectory.toFile().getCanonicalPath();
+        if (!canonicalDestinationPath.startsWith(canonicalBasePath)) {
+          throw new IOException("Entry is outside of the target dir: " + e.getName());
+        }
+ 
         InputStream is = zip.getInputStream(e);
         Files.copy(is, f.toPath(), StandardCopyOption.REPLACE_EXISTING);
       }

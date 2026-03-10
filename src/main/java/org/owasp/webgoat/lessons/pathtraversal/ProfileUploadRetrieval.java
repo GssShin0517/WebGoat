@@ -105,6 +105,13 @@ public class ProfileUploadRetrieval implements AssignmentEndpoint {
             .contentType(MediaType.parseMediaType(MediaType.IMAGE_JPEG_VALUE))
             .body(FileCopyUtils.copyToByteArray(catPicture));
       }
+
+      String normalizedPath = catPicture.getCanonicalPath();
+
+      if (!normalizedPath.startsWith(new File(catPicturesDirectory).getCanonicalPath())) {
+        return ResponseEntity.badRequest().body("Error: Attempt to access file outside of the base directory.");
+      }
+      
       if (catPicture.exists()) {
         return ResponseEntity.ok()
             .contentType(MediaType.parseMediaType(MediaType.IMAGE_JPEG_VALUE))

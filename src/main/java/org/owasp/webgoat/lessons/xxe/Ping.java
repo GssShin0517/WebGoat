@@ -7,6 +7,7 @@ package org.owasp.webgoat.lessons.xxe;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import org.owasp.webgoat.container.CurrentUsername;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +31,18 @@ public class Ping {
     String logLine = String.format("%s %s %s", "GET", userAgent, text);
     log.debug(logLine);
     File logFile = new File(webGoatHomeDirectory, "/XXE/log" + username + ".txt");
+    
+    try {
+      String normalizedPath = logFile.getCanonicalPath();
+      if (!normalizedPath.startsWith(new File(webGoatHomeDirectory).getCanonicalPath())) {
+        log.error("Error: Attempt to write file outside of the base directory.");
+        return "Error: Invalid file path.";
+      }
+    } catch (IOException e) {
+      log.error("Error occurred while validating the logfile path", e);
+      return "Error: Invalid file path.";
+    }
+ 
     try {
       try (PrintWriter pw = new PrintWriter(logFile)) {
         pw.println(logLine);
